@@ -1,15 +1,20 @@
+import { AUDIO_CONTEXT } from "$/Config"
 import AudioRecorder from "$lib/AudioRecorder"
 
 
 export class AudioProviderClass {
-    audioContext: AudioContext | null = null
+    audioContext: AudioContext
     reverbNode: ConvolverNode | null = null
     reverbVolumeNode: GainNode | null = null
     nodes: AudioNode[] = []
     hasReverb: boolean = false
-    recorder: AudioRecorder | null = null
+    recorder: AudioRecorder | null
     isRecording: boolean = false
     reverbLoading: Promise<void> | null = null
+    constructor(context: AudioContext) {
+        this.audioContext = context
+        this.recorder = new AudioRecorder()
+    }
 
     private loadReverb = (): Promise<void> => {
         this.reverbLoading =  new Promise(resolve => {
@@ -18,12 +23,12 @@ export class AudioProviderClass {
                 .then(b => {
                     if (this.audioContext) {
                         this.audioContext.decodeAudioData(b, (impulse_response) => {
-                            const convolver = this.audioContext!.createConvolver()
-                            const gainNode = this.audioContext!.createGain()
+                            const convolver = this.audioContext.createConvolver()
+                            const gainNode = this.audioContext.createGain()
                             gainNode.gain.value = 2.5
                             convolver.buffer = impulse_response
                             convolver.connect(gainNode)
-                            gainNode.connect(this.audioContext!.destination)
+                            gainNode.connect(this.audioContext.destination)
                             this.reverbNode = convolver
                             this.reverbVolumeNode = gainNode
                             this.reverbLoading = null
@@ -38,20 +43,13 @@ export class AudioProviderClass {
         })
         return this.reverbLoading
     }
-    getAudioContext = (): AudioContext => {
-        // @ts-ignore
-        if (!this.audioContext) this.audioContext = (new (window.AudioContext || window.webkitAudioContext)())
-        return this.audioContext
-    }
+
     waitReverb = async (): Promise<void> => {
         if (this.reverbLoading) {
             await this.reverbLoading
         }
     }
     init = async () => {
-        // @ts-ignore
-        this.audioContext = this.audioContext ?? (new (window.AudioContext || window.webkitAudioContext)())
-        this.recorder = new AudioRecorder(this.audioContext)
         await this.loadReverb()
         this.setAudioDestinations()
         return this
@@ -113,7 +111,7 @@ export class AudioProviderClass {
         const recording = await recorder.stop()
         if (reverbVolumeNode && audioContext) {
             reverbVolumeNode.disconnect()
-            reverbVolumeNode.connect(this.audioContext!.destination)
+            reverbVolumeNode.connect(this.audioContext.destination)
         }
         this.isRecording = false
         this.setAudioDestinations()
@@ -139,4 +137,4 @@ export class AudioProviderClass {
     }
 }
 
-export const AudioProvider = new AudioProviderClass()
+export const AudioProvider = new AudioProviderClass(AUDIO_CONTEXT)

@@ -1,13 +1,13 @@
-import { ReactNode, memo } from "react"
+import { memo } from "react"
 
-interface MultiSwitchProps<T extends ReactNode> {
+interface MultiSwitchProps<T> {
     options: readonly T[]
     selected: T
     buttonsClass: string
     onSelect: (selected: T) => void
 }
 
-const MultiSwitch = <T extends ReactNode,>({ options, selected, buttonsClass, onSelect }: MultiSwitchProps<T>) => {
+const MultiSwitch = <T,>({ options, selected, buttonsClass, onSelect }: MultiSwitchProps<T>) => {
     return <>
         {options.map((value, i) => {
             return <button

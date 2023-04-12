@@ -38,6 +38,7 @@ class KeyBinds {
     }
     constructor() {
         makeObservable(this)
+        this.load()
     }
 
     getVsrgKeybinds(keyCount: VsrgSongKeys) {

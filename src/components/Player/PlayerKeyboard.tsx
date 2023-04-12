@@ -3,6 +3,7 @@ import { APP_NAME, SPEED_CHANGERS, Pitch, NoteNameType } from "$/Config"
 import Note from '$/components/Player/PlayerNote'
 import { playerStore } from '$stores/PlayerStore'
 import { Array2d, delay, clamp, groupArrayEvery } from "$lib/Utilities"
+import "./Keyboard.css"
 import Analytics from '$/lib/Stats';
 import { playerControlsStore } from '$stores/PlayerControlsStore'
 import { ApproachingNote, RecordedNote } from '$lib/Songs/SongClasses'
@@ -376,7 +377,7 @@ export default class KeyboardPlayer extends Component<KeyboardPlayerProps, Keybo
             if (status === 'approach-wrong') playerControlsStore.increaseScore(false)
         }
         //TODO could add this to the player store
-        if(this.timeouts[note.index] as number > 0 && playerStore.eventType ==='play') clearTimeout(this.timeouts[note.index])
+        if(this.timeouts[note.index] > 0 && playerStore.eventType ==='play') clearTimeout(this.timeouts[note.index])
         this.timeouts[note.index] = setTimeout(() => {
             this.timeouts[note.index] = 0
             if (!['clicked', 'approach-wrong', 'approach-correct'].includes(keyboard[note.index].status)) return

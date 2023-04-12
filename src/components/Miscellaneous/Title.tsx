@@ -1,8 +1,11 @@
-import Head from "next/head";
+import { useEffect } from "react";
 
-export function Title({ text, description}: { text: string, description?: string }) {
-    return <Head>
-        <title>{text}</title>
-        {description && <meta name="description" content={description} />}
-    </Head>
+
+
+
+export function Title({text}: {text: string}){
+    useEffect(() => {
+        document.title = text
+    }, [text])
+    return null
 }

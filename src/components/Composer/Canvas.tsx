@@ -2,7 +2,7 @@
 //it half performant, maybe i should get rid of react pixi and do it manually, that might improve garbage collection
 //since sprites are always removed and added to the stage everytime it scrolls
 import { Component, createRef } from 'react'
-import { Stage, Container, Graphics, Sprite } from '@pixi/react';
+import { Stage, Container, Graphics, Sprite } from '@inlet/react-pixi';
 import { FaStepBackward, FaStepForward, FaPlusCircle, FaMinusCircle, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import isMobile from "is-mobile"
 import { ComposerCache } from "$/components/Composer/ComposerCache"
@@ -42,7 +42,6 @@ interface ComposerCanvasProps {
 interface ComposerCanvasState {
     width: number
     height: number
-    pixelRatio: number
     numberOfColumnsPerCanvas: number
     column: {
         width: number
@@ -66,6 +65,7 @@ interface ComposerCanvasState {
 }
 export default class ComposerCanvas extends Component<ComposerCanvasProps, ComposerCanvasState> {
     state: ComposerCanvasState
+    sizes: DOMRect
     notesStageRef: any
     breakpointsStageRef: any
     stageSelected: boolean
@@ -79,19 +79,20 @@ export default class ComposerCanvas extends Component<ComposerCanvasProps, Compo
     dispose: () => void
     constructor(props: ComposerCanvasProps) {
         super(props)
+        this.sizes = document.body.getBoundingClientRect()
         const numberOfColumnsPerCanvas = Number(this.props.data.settings.columnsPerCanvas.value)
-        const width = 300
-        const height = 150
+        let width = nearestEven(this.sizes.width * 0.85 - 45)
+        let height = nearestEven(this.sizes.height * 0.45)
+        if (APP_NAME === "Sky") height = nearestEven(height * 0.95)
         this.state = {
             width: Math.floor(width),
             height: Math.floor(height),
-            pixelRatio: 1.4,
             numberOfColumnsPerCanvas,
             column: {
                 width: nearestEven(width / numberOfColumnsPerCanvas),
                 height: height
             },
-            timelineHeight: 30,
+            timelineHeight: isMobile() ? 25 : 30,
             currentBreakpoint: -1,
             theme: {
                 timeline: {
@@ -122,29 +123,11 @@ export default class ComposerCanvas extends Component<ComposerCanvasProps, Compo
     }
 
     componentDidMount() {
-        const { numberOfColumnsPerCanvas } = this.state
-        const sizes = document.body.getBoundingClientRect()
-        let width = nearestEven(sizes.width * 0.85 - 45)
-        let height = nearestEven(sizes.height * 0.45)
-        if (APP_NAME === "Sky") height = nearestEven(height * 0.95)
-
-        this.setState({
-            width: Math.floor(width),
-            height: Math.floor(height),
-            pixelRatio: window.devicePixelRatio ?? 1.4,
-            numberOfColumnsPerCanvas,
-            column: {
-                width: nearestEven(width / numberOfColumnsPerCanvas),
-                height: height
-            },
-            timelineHeight: isMobile() ? 25 : 30,
-        }, () => {
-            window.addEventListener("resize", this.recalculateCacheAndSizes)
-            this.recalculateCacheAndSizes()
-        })
         window.addEventListener("pointerup", this.resetPointerDown)
+        window.addEventListener("resize", this.recalculateCacheAndSizes)
         KeyboardProvider.listen(this.handleKeyboard)
         this.notesStageRef?.current?._canvas?.addEventListener("wheel", this.handleWheel)
+        this.recalculateCacheAndSizes()
         this.dispose = subscribeTheme(() => {
             this.recalculateCacheAndSizes()
             this.setState({
@@ -307,7 +290,7 @@ export default class ComposerCanvas extends Component<ComposerCanvasProps, Compo
     }
 
     render() {
-        const { width, timelineHeight, height, theme, numberOfColumnsPerCanvas, pixelRatio } = this.state
+        const { width, timelineHeight, height, theme, numberOfColumnsPerCanvas } = this.state
         const { data, functions } = this.props
         const cache = this.state.cache?.cache
         const sizes = this.state.column
@@ -357,7 +340,7 @@ export default class ComposerCanvas extends Component<ComposerCanvasProps, Compo
                     options={{
                         backgroundAlpha: 0,
                         autoDensity: true,
-                        resolution: pixelRatio
+                        resolution: window?.devicePixelRatio || 1.4
                     }}
                     ref={this.notesStageRef}
                 >
@@ -427,7 +410,7 @@ export default class ComposerCanvas extends Component<ComposerCanvasProps, Compo
                         options={{
                             backgroundAlpha: 0,
                             autoDensity: true,
-                            resolution: pixelRatio
+                            resolution: window?.devicePixelRatio || 1
                         }}
                         raf={false}
                         ref={this.breakpointsStageRef}

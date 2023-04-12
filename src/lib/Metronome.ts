@@ -1,43 +1,36 @@
+import { AUDIO_CONTEXT } from "$/Config";
 import { fetchAudioBuffer } from "./Instrument";
 import { delay } from "./Utilities";
 
 
+const emptyBuffer = AUDIO_CONTEXT.createBuffer(2, AUDIO_CONTEXT.sampleRate, AUDIO_CONTEXT.sampleRate)
 class Metronome{
-    emptyBuffer: AudioBuffer | null = null
     bpm: number
     beats: number = 4
     volume: number = 50
     currentTick: number = 0
     running: boolean = false 
-    indicatorBuffer: AudioBuffer | null = null
-    crochetBuffer: AudioBuffer | null = null
-    volumeNode: GainNode | null = null
-    audioContext: AudioContext | null = null
+    indicatorBuffer: AudioBuffer = emptyBuffer
+    crochetBuffer: AudioBuffer = emptyBuffer
+    volumeNode: GainNode = AUDIO_CONTEXT.createGain()
     constructor(bpm?: number){
         this.bpm = bpm ?? 220
-
-    }
-    init(audioContext: AudioContext){
-        this.audioContext = audioContext
-        this.volumeNode = audioContext.createGain()
         this.loadBuffers()
-        this.volumeNode.connect(this.audioContext.destination)
+        this.volumeNode.connect(AUDIO_CONTEXT.destination)
         this.changeVolume(this.volume)
     }
     destroy(){
-        this.volumeNode?.disconnect()
+        this.volumeNode.disconnect()
+
     }
     changeVolume(volume: number){
         this.volume = volume
-        if(!this.volumeNode) return
         this.volumeNode.gain.value = volume / 100
     }
     async loadBuffers(){
-        if(!this.audioContext) return
-        this.emptyBuffer = this.audioContext.createBuffer(2, this.audioContext.sampleRate, this.audioContext.sampleRate)
         const promises = [
-            fetchAudioBuffer("./assets/audio/MetronomeSFX/bar.mp3", this.audioContext).catch(() => this.emptyBuffer),
-            fetchAudioBuffer("./assets/audio/MetronomeSFX/quarter.mp3", this.audioContext).catch(() => this.emptyBuffer)
+            fetchAudioBuffer("./assets/audio/MetronomeSFX/bar.mp3").catch(() => emptyBuffer),
+            fetchAudioBuffer("./assets/audio/MetronomeSFX/quarter.mp3").catch(() => emptyBuffer)
         ]
         const result = await Promise.all(promises)
         this.indicatorBuffer = result[0]
@@ -63,8 +56,7 @@ class Metronome{
         }
     }
     tick(){
-        if(!this.audioContext || !this.indicatorBuffer || !this.crochetBuffer || !this.volumeNode) return
-        const source = this.audioContext.createBufferSource()
+        const source = AUDIO_CONTEXT.createBufferSource()
         if(this.currentTick % this.beats === 0){
             source.buffer = this.crochetBuffer
             this.currentTick = 0

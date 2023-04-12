@@ -1,4 +1,4 @@
-import { Container, Stage } from "@pixi/react";
+import { Container, Stage } from "@inlet/react-pixi";
 import { subscribeTheme } from "$lib/Hooks/useTheme";
 import { VsrgAccuracyBounds, VsrgHitObject, VsrgSong } from "$lib/Songs/VsrgSong";
 import { ThrottledEventLoop } from "$lib/ThrottledEventLoop";
@@ -12,7 +12,6 @@ import { VsrgPlayerCache } from "./VsgPlayerCache";
 import { VsrgHitObjectsRenderer } from "./VsrgHitObjectsRenderer";
 import { VsrgPlayerCountDown } from "./VsrgPlayerCountDown";
 import { VsrgKeyboardLayout } from "./VsrgPlayerKeyboard";
-import { DEFAULT_DOM_RECT } from "$/Config";
 
 
 
@@ -69,7 +68,6 @@ export class RenderableHitObject {
 
 interface VsrgPlayerCanvasState {
     song: VsrgSong
-    devicePixelRatio: number
     timestamp: number
     accuracy: number
     sizes: VsrgPlayerCanvasSizes
@@ -79,7 +77,7 @@ interface VsrgPlayerCanvasState {
     accuracyBounds: VsrgAccuracyBounds
 }
 export const defaultVsrgPlayerSizes: VsrgPlayerCanvasSizes = {
-    el: {...DEFAULT_DOM_RECT},
+    el: new DOMRect(),
     rawWidth: 0,
     rawHeight: 0,
     width: 0,
@@ -87,7 +85,7 @@ export const defaultVsrgPlayerSizes: VsrgPlayerCanvasSizes = {
     keyWidth: 0,
     hitObjectSize: 0,
     scaling: 0,
-    verticalOffset: 0,
+    verticalOffset: 0
 }
 
 export class VsrgPlayerCanvas extends Component<VsrgPlayerCanvasProps, VsrgPlayerCanvasState>{
@@ -100,7 +98,6 @@ export class VsrgPlayerCanvas extends Component<VsrgPlayerCanvasProps, VsrgPlaye
         this.state = {
             song: new VsrgSong(''),
             timestamp: 0,
-            devicePixelRatio: 1.4,
             accuracy: 150,
             sizes: defaultVsrgPlayerSizes,
             colors: {
@@ -128,7 +125,6 @@ export class VsrgPlayerCanvas extends Component<VsrgPlayerCanvasProps, VsrgPlaye
             callback: this.handleKeyboard,
             id: 'vsrg-player-canvas'
         })
-        this.setState({ devicePixelRatio: window.devicePixelRatio ?? 1.4 })
         this.toDispose.push(() => vsrgPlayerStore.removeKeyboardListener({ id: 'vsrg-player-canvas' }))
         this.toDispose.push(subscribeCurrentVsrgSong(this.onSongPick))
         this.toDispose.push(subscribeTheme(this.handleThemeChange))
@@ -316,7 +312,7 @@ export class VsrgPlayerCanvas extends Component<VsrgPlayerCanvasProps, VsrgPlaye
 
 
     render() {
-        const { sizes, cache, renderableHitObjects, timestamp, colors, devicePixelRatio } = this.state
+        const { sizes, cache, renderableHitObjects, timestamp, colors } = this.state
         const { scrollSpeed } = this.props
         return <>
             <div 
@@ -339,7 +335,7 @@ export class VsrgPlayerCanvas extends Component<VsrgPlayerCanvasProps, VsrgPlaye
                     options={{
                         backgroundAlpha: 0,
                         autoDensity: false,
-                        resolution: devicePixelRatio,
+                        resolution: window?.devicePixelRatio || 1,
                     }}
                     onMount={this.calculateSizes}
                 >

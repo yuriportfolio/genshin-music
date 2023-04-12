@@ -1,4 +1,4 @@
-import { INSTRUMENTS_DATA, INSTRUMENTS, Pitch, APP_NAME, BaseNote, NOTE_SCALE, PITCH_TO_INDEX, NoteNameType } from "$/Config"
+import { INSTRUMENTS_DATA, INSTRUMENTS, AUDIO_CONTEXT, Pitch, APP_NAME, BaseNote, NOTE_SCALE, PITCH_TO_INDEX, NoteNameType } from "$/Config"
 import { makeObservable, observable } from "mobx"
 import { InstrumentName, NoteStatus } from "$types/GeneralTypes"
 import { getPitchChanger } from "./Utilities"
@@ -31,7 +31,7 @@ export default class Instrument {
     buffers: AudioBuffer[] = []
     isDeleted: boolean = false
     isLoaded: boolean = false
-    audioContext: AudioContext | null = null
+
     get endNode() {
         return this.volumeNode
     }
@@ -93,9 +93,9 @@ export default class Instrument {
     }
 
     play = (note: number, pitch: Pitch) => {
-        if (this.isDeleted || !this.volumeNode || !this.audioContext) return
+        if (this.isDeleted || !this.volumeNode) return
         const pitchChanger = getPitchChanger(pitch)
-        const player = this.audioContext.createBufferSource()
+        const player = AUDIO_CONTEXT.createBufferSource()
         player.buffer = this.buffers[note]
         player.connect(this.volumeNode)
         //player.detune.value = pitch * 100, pitch should be 0 indexed from C
@@ -107,15 +107,14 @@ export default class Instrument {
         }
         player.addEventListener('ended', handleEnd, { once: true })
     }
-    load = async (audioContext: AudioContext) => {
-        this.audioContext = audioContext
-        this.volumeNode = audioContext.createGain()
+    load = async () => {
+        this.volumeNode = AUDIO_CONTEXT.createGain()
         this.volumeNode.gain.value = 0.8
         let loadedCorrectly = true
         if (!INSTRUMENT_BUFFER_POOL.has(this.name)) {
-            const emptyBuffer = this.audioContext.createBuffer(2, this.audioContext.sampleRate, this.audioContext.sampleRate)
+            const emptyBuffer = AUDIO_CONTEXT.createBuffer(2, AUDIO_CONTEXT.sampleRate, AUDIO_CONTEXT.sampleRate)
             const requests: Promise<AudioBuffer>[] = this.notes.map(note =>
-                fetchAudioBuffer(note.url, audioContext)
+                fetchAudioBuffer(note.url)
                     .catch(() => {
                         loadedCorrectly = false
                         return emptyBuffer
@@ -143,13 +142,13 @@ export default class Instrument {
         this.volumeNode = null
     }
 }
-export function fetchAudioBuffer(url: string, audioContext: AudioContext): Promise<AudioBuffer> {
+export function fetchAudioBuffer(url: string): Promise<AudioBuffer> {
     //dont change any of this, safari bug
     return new Promise((res, rej) => {
         fetch(url)
             .then(result => result.arrayBuffer())
             .then(buffer => {
-                audioContext.decodeAudioData(buffer, res, (e) => {
+                AUDIO_CONTEXT.decodeAudioData(buffer, res, (e) => {
                     console.error(e)
                     rej()
                 }).catch(e => {

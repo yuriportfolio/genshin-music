@@ -18,11 +18,10 @@ export class MIDIListener {
     settings: typeof MIDISettings
     inputs: WebMidi.MIDIInput[] = []
     constructor() {
-        this.settings = settingsService.getDefaultMIDISettings()
-    }
-    init = async (): Promise<WebMidi.MIDIAccess | null> => {
         this.settings = settingsService.getMIDISettings()
-        if (!this.settings.enabled) return null
+        if (this.settings.enabled) this.create()
+    }
+    create = async (): Promise<WebMidi.MIDIAccess | null> => {
         if (this.MIDIAccess) return this.MIDIAccess
         if (navigator.requestMIDIAccess) {
             try{
@@ -42,7 +41,7 @@ export class MIDIListener {
     enable = () => {
         this.settings.enabled = true
         this.saveSettings()
-        return this.init()
+        return this.create()
     }
     destroy = () => {
         this.listeners = []

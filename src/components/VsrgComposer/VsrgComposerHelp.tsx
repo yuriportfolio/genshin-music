@@ -1,6 +1,5 @@
 import helpImg from '$/assets/images/help-vsrg-composer.png';
 import { keyBinds } from '$/stores/KeybindsStore';
-import Image from 'next/image';
 import { Key } from '../HelpTab';
 
 
@@ -28,12 +27,9 @@ export function VsrgComposerHelp() {
                     Once finished you can test the song in the vsrg player
                 </p>
             </div>
-            <Image 
-                src={helpImg}
-                alt="tutorial for the vsrg composer page"
-                className="help-img"
-                loading="lazy"
-            />
+
+
+            <img src={helpImg} className="help-img" alt="tutorial for the vsrg composer page" loading="lazy" />
             <ol>
                 <li>Selected hit object</li>
                 <li>Held hit object</li>

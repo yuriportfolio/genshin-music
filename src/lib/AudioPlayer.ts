@@ -11,11 +11,6 @@ export class AudioPlayer{
     constructor(basePitch: Pitch){
         this.basePitch = basePitch
     }
-
-
-    setBasePitch(pitch: Pitch){
-        this.basePitch = pitch
-    }
     destroy(){
         this.audioInstruments.forEach(ins => {
             AudioProvider.disconnect(ins.endNode)
@@ -39,7 +34,7 @@ export class AudioPlayer{
                 //If it doesn't have the instrument, create it
                 const instrument = new Instrument(ins.name)
                 audioInstruments[i] = instrument
-                await instrument.load(AudioProvider.getAudioContext())
+                await instrument.load()
                 AudioProvider.connect(instrument.endNode)
                 instrument.changeVolume(ins.volume)
                 return instrument
@@ -55,7 +50,7 @@ export class AudioPlayer{
                 old.dispose()
                 const instrument = new Instrument(ins.name)
                 audioInstruments[i] = instrument
-                await instrument.load(AudioProvider.getAudioContext())
+                await instrument.load()
                 AudioProvider.connect(instrument.endNode)
                 instrument.changeVolume(ins.volume)
                 return instrument

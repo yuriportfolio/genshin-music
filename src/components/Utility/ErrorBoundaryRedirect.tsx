@@ -1,22 +1,18 @@
-import { NextRouter, useRouter } from "next/router";
-import { Component, ReactElement } from "react";
+import { Component } from "react";
+import { RouteComponentProps, withRouter } from "react-router-dom";
 
 
 
-type ErrorBoundaryRedirectProps = {
+type ErrorBoundaryRedirectProps  = RouteComponentProps &{
     onErrorGoTo: string
     onError: () => void
-    children: ReactElement
 }
-type ErrorBoundaryRedirectPropsWithRouter = ErrorBoundaryRedirectProps & {
-    router: NextRouter
-}
-class ErrorBoundaryRedirect extends Component<ErrorBoundaryRedirectPropsWithRouter>{
+class ErrorBoundaryRedirect extends Component<ErrorBoundaryRedirectProps>{
 
     componentDidCatch(error:any, info:any) {
         console.error(error, info);
         if(window.location.hostname === "localhost") return console.error("Prevent localhost redirect")
-        this.props.router.push(this.props.onErrorGoTo);
+        this.props.history.push(this.props.onErrorGoTo);
     }
 
     render(){
@@ -24,8 +20,4 @@ class ErrorBoundaryRedirect extends Component<ErrorBoundaryRedirectPropsWithRout
     }
 }
 
-export default function ErrorBoundaryRedirectWithRouter(props: ErrorBoundaryRedirectProps){
-    const router = useRouter()
-    return <ErrorBoundaryRedirect {...props} router={router} />
-}
-
+export default withRouter<ErrorBoundaryRedirectProps,any>(ErrorBoundaryRedirect)

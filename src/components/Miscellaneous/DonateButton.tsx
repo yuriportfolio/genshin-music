@@ -1,14 +1,7 @@
-import { isTWA } from '$/lib/Utilities'
-import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { isTwa } from '$/Config'
+import { Link } from 'react-router-dom'
 export default function DonateButton(){
-    const [isTwa, setIsTwa] = useState(false)
-    useEffect(() => {
-        setIsTwa(isTWA())
-    }, [])
-
-
-    return !isTwa ? <Link className="donate-button" href='donate'>
+    return !isTwa() ? <Link className="donate-button" to={'Donate'}>
         Donate
     </Link> : <></>
 }

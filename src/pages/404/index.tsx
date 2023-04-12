@@ -1,10 +1,10 @@
 import { DefaultPage } from "$cmp/Layout/DefaultPage";
 import { Title } from "$cmp/Miscellaneous/Title";
-import Link from 'next/link'
+import { Link } from 'react-router-dom'
 export default function Error404() {
     return <DefaultPage>
-        <Title text="404" description="oh no!"/>
-        <Link href='/' className='link' style={{textAlign: 'center'}}>
+        <Title text="404" />
+        <Link to='./' className='link' style={{textAlign: 'center'}}>
             <div style={{ fontSize: '6rem' }}>
                 404
             </div>

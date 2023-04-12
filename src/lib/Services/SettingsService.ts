@@ -39,6 +39,7 @@ class SettingsService {
         return result
     }
 
+
     getComposerSettings(): ComposerSettingsDataType {
         const { data, hadUpdate } = this.getLatestSettings(ComposerSettings, APP_NAME + "_Composer_Settings")
         if (hadUpdate) {
@@ -46,10 +47,6 @@ class SettingsService {
         }
         return data
     }
-    getDefaultComposerSettings(): ComposerSettingsDataType {
-        return ComposerSettings.data
-    }
-
     getZenKeyboardSettings(){
         const { data, hadUpdate } = this.getLatestSettings(ZenKeyboardSettings, APP_NAME + "_ZenKeyboard_Settings")
         if (hadUpdate) {
@@ -57,19 +54,12 @@ class SettingsService {
         }
         return data
     }
-    getDefaultZenKeyboardSettings(){
-        return ZenKeyboardSettings.data
-    }
-
     getVsrgComposerSettings(): VsrgComposerSettingsDataType {
         const { data, hadUpdate } = this.getLatestSettings(VsrgComposerSettings, APP_NAME + "_VsrgComposer_Settings")
         if (hadUpdate) {
             this.updateVsrgComposerSettings(data)
         }
         return data
-    }
-    getDefaultVsrgComposerSettings(): VsrgComposerSettingsDataType {
-        return VsrgComposerSettings.data
     }
 
     getVsrgPlayerSettings(): VsrgPlayerSettingsDataType {
@@ -79,9 +69,6 @@ class SettingsService {
         }
         return data
     }
-    getDefaultVsrgPlayerSettings(): VsrgPlayerSettingsDataType {
-        return VsrgPlayerSettings.data
-    }
 
     getPlayerSettings(): PlayerSettingsDataType {
         const { data, hadUpdate } = this.getLatestSettings(PlayerSettings, APP_NAME + "_Player_Settings")
@@ -90,9 +77,7 @@ class SettingsService {
         }
         return data
     }
-    getDefaultPlayerSettings(): PlayerSettingsDataType {
-        return PlayerSettings.data
-    }
+    
     getMIDISettings() {
         try {
             const settings = JSON.parse(localStorage?.getItem(`${APP_NAME}_MIDI_Settings`) || 'null') as any
@@ -105,9 +90,6 @@ class SettingsService {
             console.error(e)
             return MIDISettings
         }
-    }
-    getDefaultMIDISettings() {
-        return MIDISettings
     }
     updateVsrgComposerSettings(settings: VsrgComposerSettingsDataType) {
         const state = {
